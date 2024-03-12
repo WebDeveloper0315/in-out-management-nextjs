@@ -5,19 +5,16 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Please enter your name"],
-      trim: true,
-      minLength: 1,
-      maxLength: 20,
+      required: false,
     },
     DOB: {
       type: Date,
-      required: true,
+      required: false,
     },
     gender: {
       type: Boolean, // man- true, woman-false
       default: true,
-      required: true,
+      required: false,
     },
     id: {
       type: String,
@@ -43,12 +40,8 @@ const userSchema = new mongoose.Schema(
 
 userSchema.plugin(uniqueValidator);
 
-//delete old model
-if (mongoose.models.users) {
-  const userModel = mongoose.model("users");
-  mongoose.deleteModel(userModel.modelName);
-}
-//create new model
-const User = mongoose.model("users", userSchema);
+// Model creation
+const User = mongoose.models.users || mongoose.model("users", userSchema);
+
 
 export default User;

@@ -2,3 +2,104 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  font-family: "Montserrat", sans-serif !important;
+  box-sizing: border-box;
+}
+
+/* :root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+} */
+
+/* body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+} */
+
+html,
+body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: #636262;
+}
+
+/* button {
+  background-color: #00b96b !important;
+} */
+
+input,
+textarea,
+select {
+  min-height: 45px;
+  width: 100%;
+  border: 1px solid #c6c6c6;
+  padding-left: 15px !important;
+  border-radius: 2px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border: 1px solid #353535;
+}
+
+textarea {
+  margin-top: 10px !important;
+  min-height: 100px;
+}
+
+/* button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  height: 45px !important;
+  box-shadow: none !important;
+  border-radius: 5px !important;
+} */
+
+.ant-table button {
+  height: 17px !important;
+  border-radius: 2px !important;
+}
+
+label {
+  margin: 0px !important;
+  padding: 0px !important;
+  /* color: #353535 !important; */
+}
+
+a {
+  text-decoration: none;
+  /* color: var(--primary) !important; */
+}
+
+.ant-radio-input {
+  accent-color: #232323 !important;
+}
+
+i {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+table {
+  border: 1px solid #c7c7c7 !important;
+  border-radius: 5px;
+}

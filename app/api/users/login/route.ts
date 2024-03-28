@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
           name: reqBody.name,
           password:
             "$2a$10$OwT.utp3zyRrMaufMMWyOOvhGj1yMlgUdQNCHAbiRH6Ao70gmJ4xq",
-          role: 10,
+          role: "superadmin",
           
         });
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     };
 
     const token = jwt.sign(dataToBeSigned, process.env.JWT_SECRET!, {
-      expiresIn: "10m",
+      expiresIn: "1h",
     });
 
     const response = NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // set cookie
     response.cookies.set("token", token, {
       httpOnly: true,
-      maxAge: 10 * 60 * 1000, // 1 hour
+      maxAge: 60 * 60 * 1000, // 1 hour
     });
 
     return response;

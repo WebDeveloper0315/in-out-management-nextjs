@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       DOB: new Date(1990, 0, 1),
       gender: true,
       id: "khc0315",
-      role: 10,
+      role: "admin",
       image: "sdf"
     });
 

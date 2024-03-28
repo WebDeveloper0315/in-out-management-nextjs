@@ -8,6 +8,7 @@ import '@/styles/commonClasses.css'
 import '@/styles/layout.css'
 import "@/styles/loader.css";
 import React from "react";
+import "@/fontawesome"
 
 
 export const metadata: Metadata = {
@@ -23,11 +24,11 @@ export default function RootLayout({
   return (
     <html lang="UTF-8" className='dark'>
       <body className="bg-gray-900 text-white">
-        <ReduxProvider>
-          <NextProvider>
-            <AntdProvider>{children}</AntdProvider>
-          </NextProvider>
-        </ReduxProvider>
+          <ReduxProvider>
+            <NextProvider>
+              <AntdProvider>{children}</AntdProvider>
+            </NextProvider>
+          </ReduxProvider>
       </body>
     </html>
   );

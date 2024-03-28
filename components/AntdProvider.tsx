@@ -1,47 +1,97 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { ConfigProvider, message, theme } from "antd";
+import { ConfigProvider, Button, message, theme, Layout, Menu, Avatar, Flex, Dropdown, Space, Badge } from "antd";
+import type { MenuProps } from 'antd';
+import {
+  BellOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SmileOutlined,
+  UploadOutlined,
+  UserOutlined,
+  VideoCameraOutlined,
+} from "@ant-design/icons";
+
 import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { SetCurrentUser } from "@/redux/userSlice";
+import { setSelectedMenuItemKey, selectSelectedMenuItemKey } from "@/redux/menuSlice"
 import Loader from "./Loader";
 import { SetLoading } from "@/redux/loadersSlice";
-import TopNav from "./nav/TopNav";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCoffee, faBars, faUser, faUserShield, faTachometerAlt, faBuilding, faUsers } from "@fortawesome/free-solid-svg-icons";
+import Image from "next/image";
+
+const { Header, Sider, Content } = Layout;
+
+type SideMenuItem = {
+  label: string;
+  icon: JSX.Element;
+  key: string;
+  path?: string;
+  subItems?: SideMenuItem[];
+}
 
 function AntdProvider({ children }: { children: React.ReactNode }) {
   const { currentUser } = useSelector((state: any) => state.users);
   const { loading } = useSelector((state: any) => state.loaders);
+  const { selectedMenuItemKey } = useSelector((state: any) => state.menus);
   const dispatch = useDispatch();
   const router = useRouter();
   const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(true);
-  const [menuItems, setMenuItems] = useState([
+
+  const [isDropMenuOpen, setIsDropMenuOpen] = React.useState(false);
+
+  const dropMenuItems = [
+    "Dashboard",
+    "User Management",
+    "Department Management",
+    "Employee Management",
+    "Employee In-Out",
+    "Customer In-Out",
+    "Company Cars In-Out",
+    "Customer Cars In-Out",
+    "Settings",
+    "Log Out",
+  ];
+
+  const items: MenuProps['items'] = [
     {
-      name: " ",
-      path: " ",
-      icon: " ",
+      key: '1',
+      label: (
+        <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
+          1st menu item
+        </a>
+      ),
     },
     {
-      name: " ",
-      path: " ",
-      icon: " ",
+      key: '2',
+      label: (
+        <a target="_blank" rel="noopener noreferrer" href="https://www.aliyun.com">
+          2nd menu item (disabled)
+        </a>
+      ),
+      icon: <SmileOutlined />,
+      disabled: true,
     },
     {
-      name: " ",
-      path: " ",
-      icon: " ",
+      key: '3',
+      label: (
+        <a target="_blank" rel="noopener noreferrer" href="https://www.luohanacademy.com">
+          3rd menu item (disabled)
+        </a>
+      ),
+      disabled: true,
     },
     {
-      name: " ",
-      path: " ",
-      icon: " ",
+      key: '4',
+      danger: true,
+      label: 'a danger item',
     },
-    {
-      name: " ",
-      path: " ",
-      icon: " ",
-    },
-  ]);
+  ];
+
+  const [menuItems, setMenuItems] = useState<SideMenuItem[]>([]);
 
   const pathname = usePathname();
 
@@ -50,86 +100,151 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
       dispatch(SetLoading(true));
 
       const response = await axios.get("/api/users/currentuser");
-      let pos: number = 0;
+      console.log(response.data.data);
 
-      const isNewProduct = response.data.data.newProduct === true;
-      const isReturning = response.data.data.returning === true;
-      const isSold = response.data.data.sold === true;
-      const isQuery = response.data.data.query === true;
-      const isAddUser = response.data.data.addUser === true;
       dispatch(SetCurrentUser(response.data.data));
 
-      // console.log('isSold', isSold)
-      if (isNewProduct) {
-        const tempMenuItems = menuItems;
-        tempMenuItems[pos].name = "New Product";
-        tempMenuItems[pos].path = "/newproduct";
-        tempMenuItems[pos].icon = "ri-add-circle-line";
-        setMenuItems(tempMenuItems);
-        pos = pos + 1;
-      }
-      // console.log(pos)
-      if (isSold) {
-        const tempMenuItems = menuItems;
-        tempMenuItems[pos].name = "Sold";
-        tempMenuItems[pos].path = "/sold";
-        tempMenuItems[pos].icon = "ri-check-double-line";
-        setMenuItems(tempMenuItems);
-        pos = pos + 1;
-      }
+      if(response.data.data.role === "superadmin")
+      {
+        setMenuItems([
+          {
+            label: "Dashboard",
+            icon: <FontAwesomeIcon icon={faTachometerAlt} />,
+            key: '1',
+            path: "/"
+          },
+          {
+            key: "group1",
+            label: "Admin Task",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "Members",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '2',
+                path: "/member"
+              },
+              {
+                label: "Department",
+                icon: <FontAwesomeIcon icon={faBuilding} />,
+                key: '3',
+                path: "/department"
+              },
+              {
+                label: "Employee",
+                icon: <FontAwesomeIcon icon={faUsers} />,
+                key: '4',
+                path: "/employee"
+              },
+            ]
+          },
+          {
+            key: "group2",
+            label: "Staff In-Out",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "Employee In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '5',
+                path: "/stuff"
+              },
+              {
+                label: "Customer In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '6',
+                path: "/customer"
+              },
+            ]
+          },
+          {
+            key: "group3",
+            label: "Cars In-Out",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "InCar In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '7',
+                path: "/incar"
+              },
+              {
+                label: "OutCar In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '8',
+                path: "/outcar"
+              },
+            ]
+          },
+          {
+            key: "group4",
+            label: "Statistics",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "History",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '9',
+                path: "/history"
+              },
+              {
+                label: "Statistics",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '10',
+                path: "/statistics"
+              },
+            ]
+          },
+          
+          
+          
+          {
+            label: "Settings",
+            icon: <FontAwesomeIcon icon={faUserShield} />,
+            key: '11',
+            path: "/settings"
+          },
 
-      if (isReturning) {
-        const tempMenuItems = menuItems;
-        tempMenuItems[pos].name = "Item Return";
-        tempMenuItems[pos].path = "/returning";
-        tempMenuItems[pos].icon = "ri-refund-2-line";
-        setMenuItems(tempMenuItems);
-        pos = pos + 1;
+        ])
       }
-      // console.log(pos)
-      if (isQuery) {
-        const tempMenuItems = menuItems;
-        tempMenuItems[pos].name = "Query";
-        tempMenuItems[pos].path = "/query";
-        tempMenuItems[pos].icon = "ri-questionnaire-line";
-        setMenuItems(tempMenuItems);
-        pos = pos + 1;
-      }
-      if (isAddUser) {
-        const tempMenuItems = menuItems;
-        tempMenuItems[pos].name = "Add User";
-        tempMenuItems[pos].path = "/adduser";
-        tempMenuItems[pos].icon = "ri-user-add-line";
-        setMenuItems(tempMenuItems);
-        pos = pos + 1;
-      }
-
-      if (pos < 5) {
-        while (pos < 5) {
-          const tempMenuItems = menuItems;
-          tempMenuItems[pos].name = "";
-          tempMenuItems[pos].path = "";
-          tempMenuItems[pos].icon = "";
-          setMenuItems(tempMenuItems);
-          pos = pos + 1;
-        }
+      else 
+      {
+        console.log("object")
       }
     } catch (error: any) {
       router.push("/login");
       console.log(error);
       message.error(
-        error.response.data.message || "Error during getting the current user"
+        error.response.data.message || "Error during getting the current user",
       );
     } finally {
       dispatch(SetLoading(false));
     }
   };
 
+  const [menuKey, setMenuKey] = useState<MenuProps['selectedKeys']>(['1']);
+  // const location = useLocation();
+  // const history = useHistory();
+  console.log('menuKey', menuKey)
   useEffect(() => {
     if (pathname !== "/login" && pathname !== "/register" && !currentUser) {
       getCurrentUser();
     }
   }, [pathname]);
+
+  // useEffect(() => {
+    
+  //   if (!selectedMenuItemKey) {
+  //     dispatch(setSelectedMenuItemKey('1'));
+  //   }
+  // }, []);
+
+  const handleMenuItemClick = (itemKey: string) => {
+    dispatch(setSelectedMenuItemKey(itemKey));
+    setMenuKey([itemKey])
+  }
+
+  console.log('selectedMenuItemKey', selectedMenuItemKey)
 
   const onLogout = async () => {
     try {
@@ -144,6 +259,24 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
       dispatch(SetLoading(false));
     }
   };
+
+  const [collapsed, setCollapsed] = useState(false);
+  const {token} = theme.useToken();
+  // console.log('token ', token)
+  const renderMenuItems = (items: SideMenuItem[]) => {
+    return items.map(item =>
+      item.subItems ? (
+        <Menu.SubMenu key={item.key}  title={item.label}>
+          {renderMenuItems(item.subItems)}
+        </Menu.SubMenu>
+      ) : (
+        <Menu.Item key={item.key} icon={item.icon} onClick={() => (item.path? router.push(item.path): item.path)}>
+          {item.label}
+        </Menu.Item>
+      )
+    );
+  };
+
   return (
     <ConfigProvider
       theme={{
@@ -151,9 +284,9 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
         components: {
           Button: {
             algorithm: true,
-            controlHeight: 45
-          }
-        }
+            controlHeight: 45,
+          },
+        },
       }}
     >
       {loading && <Loader />}
@@ -163,63 +296,132 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
         <div>{children}</div>
       ) : (
         currentUser && (
-          <div className="layout-parent">
-            <div
-              className="sidebar"
-              style={{
-                width: isSidebarExpanded ? "200px" : "auto",
-              }}
-            >
-              <div className="logo">
-                {isSidebarExpanded && <h1>Side Panel</h1>}
-                {!isSidebarExpanded && (
-                  <i
-                    className="ri-menu-2-line"
-                    onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-                  ></i>
-                )}
-                {isSidebarExpanded && (
-                  <i
-                    className="ri-close-line"
-                    onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
-                  ></i>
-                )}
+          <Layout className="h-screen">
+            <Sider trigger={null} collapsible collapsed={collapsed}>
+              <div className="w-full h-16">
+                {!collapsed && <Image
+                  className="mx-auto flex text-center items-center"
+                  src={{
+                    src: "/Assets/Image/logo.svg",
+                    width: 100, 
+                    height: 64, 
+                  }}
+                  alt="Your Company"
+                />}
+                {collapsed && <div className="h-9 m-4 "></div>}
               </div>
+            
+              <Menu
+                theme="dark"
+                mode="inline"
+                defaultSelectedKeys={selectedMenuItemKey}
+                selectedKeys={selectedMenuItemKey}
+                onSelect={(item) => handleMenuItemClick(item.key)}
+                
+              >
+                {renderMenuItems(menuItems)}
+              </Menu>
+            </Sider>
+            <Layout>
+              <Header style={{ padding: 0, }}>
+                <Flex justify="space-between">
+                  <Button
+                    type="text"
+                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                    onClick={() => setCollapsed(!collapsed)}
+                    style={{
+                      fontSize: '16px',
+                      width: 64,
+                      height: 64,
+                    }}
+                  />
+                  <Flex justify="flex-end" align="center" >
+                    <Dropdown menu={{items}} placement="bottomRight" arrow>
+                      <a onClick={(e) => e.preventDefault()} className="flex items-center mr-6">
+                        <Badge count={1}> 
+                          <BellOutlined style={{ fontSize: '32px', color: token.colorTextLightSolid}} />
+                        </Badge>
+                      </a>
+                    </Dropdown>
+                    <Dropdown menu={{items}} placement="bottomRight">
+                      <a onClick={(e) => e.preventDefault()} className="mr-12">
+                        <Avatar style={{ marginRight: '5px' }} src={`/api/image?key=${currentUser?.image}`} size="large"/>
+                        <span className="text-white">{currentUser?.name}</span>
+                      </a>
+                    </Dropdown>
+                  </Flex>
+                </Flex>
+              </Header>
+              <Content
+                style={{
+                  
+                  padding: 24,
+                  minHeight: 280,
+                  borderRadius: token.borderRadiusLG,
+                  
+                }}
+              >
+                {children}
+              </Content>
+            </Layout>
+          </Layout>
+          // <div className="layout-parent">
+          //   <div
+          //     className="relative flex h-full w-80 flex-col !border-r-small border-divider p-6 duration-1000 ease-in-out transition-width"
+          //     style={{
+          //       width: isSidebarExpanded ? "200px" : "auto",
+          //     }}
+          //   >
+          //     <div className="logo">
+          //       {isSidebarExpanded && <h1>Side Panel</h1>}
+          //       {!isSidebarExpanded && (
+          //         <FontAwesomeIcon
+          //           icon={faBars}
+          //           onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          //         />
+          //       )}
+          //       {isSidebarExpanded && (
+          //         <FontAwesomeIcon
+          //           icon={faCoffee}
+          //           onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+          //         />
+          //       )}
+          //     </div>
 
-              <div className="menu-items">
-                {menuItems.map((item, index) => {
-                  const isActive = pathname === item.path;
-                  return (
-                    <div
-                      className={`menu-item ${
-                        isActive ? "active-menu-item" : ""
-                      }`}
-                      style={{
-                        justifyContent: isSidebarExpanded
-                          ? "flex-start"
-                          : "center",
-                      }}
-                      key={index}
-                      onClick={() => router.push(item.path)}
-                    >
-                      <i className={item.icon}></i>
-                      <span>{isSidebarExpanded && item.name}</span>
-                    </div>
-                  );
-                })}
-              </div>
+          //     <div className="menu-items">
+          //       {menuItems.map((item, index) => {
+          //         const isActive = pathname === item.path;
+          //         return (
+          //           <div
+          //             className={`menu-item ${
+          //               isActive ? "active-menu-item" : ""
+          //             }`}
+          //             style={{
+          //               justifyContent: isSidebarExpanded
+          //                 ? "flex-start"
+          //                 : "center",
+          //             }}
+          //             key={index}
+          //             onClick={() => router.push(item.path)}
+          //           >
+          //             <i className={item.icon}></i>
+          //             <span>{isSidebarExpanded && item.name}</span>
+          //           </div>
+          //         );
+          //       })}
+          //     </div>
 
-              <div className="user-info flex items-center justify-between">
-                {isSidebarExpanded && (
-                  <div className="flex flex-col">
-                    <span>{currentUser?.name}</span>
-                  </div>
-                )}
-                <i className="ri-logout-box-r-line" onClick={onLogout}></i>
-              </div>
-            </div>
-            <div className="body">{children}</div>
-          </div>
+          //     <div className="user-info flex items-center justify-between">
+          //       {isSidebarExpanded && (
+          //         <div className="flex flex-col">
+          //           <span>{currentUser?.name}</span>
+          //         </div>
+          //       )}
+          //       <i className="ri-logout-box-r-line" onClick={onLogout}></i>
+          //     </div>
+          //   </div>
+          //   <div className="body">{children}</div>
+          // </div>
         )
       )}
       {/* {children} */}

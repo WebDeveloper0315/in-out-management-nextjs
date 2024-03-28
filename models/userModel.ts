@@ -25,12 +25,13 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     role: {
-      type: Number, //10-admin, 20-member
+      type: String, 
       required: true,
     },
     image: {
       type: String,
-      required: false,
+      default: "Avatars/user_man.png",
+      required: true,
     }
   },
   {

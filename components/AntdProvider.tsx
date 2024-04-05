@@ -16,7 +16,7 @@ import { useRouter, usePathname } from "next/navigation";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { SetCurrentUser } from "@/redux/userSlice";
-import { setSelectedMenuItemKey, selectSelectedMenuItemKey } from "@/redux/menuSlice"
+import { setSelectedMenuItemKey} from "@/redux/menuSlice"
 import Loader from "./Loader";
 import { SetLoading } from "@/redux/loadersSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -25,12 +25,24 @@ import Image from "next/image";
 
 const { Header, Sider, Content } = Layout;
 
-type SideMenuItem = {
-  label: string;
-  icon: JSX.Element;
-  key: string;
-  path?: string;
-  subItems?: SideMenuItem[];
+type SideMenuItem = Required<MenuProps>['items'][number];
+
+function getItem(
+  label: React.ReactNode,
+  key: React.Key,
+  icon?: React.ReactNode,
+  path?:React.ReactNode,
+  children?: SideMenuItem[],
+  type?: 'group',
+): SideMenuItem {
+  return {
+    key,
+    icon,
+    children,
+    path,
+    label,
+    type,
+  } as SideMenuItem;
 }
 
 function AntdProvider({ children }: { children: React.ReactNode }) {
@@ -39,24 +51,10 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
   const { selectedMenuItemKey } = useSelector((state: any) => state.menus);
   const dispatch = useDispatch();
   const router = useRouter();
-  const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(true);
 
   const [isDropMenuOpen, setIsDropMenuOpen] = React.useState(false);
 
-  const dropMenuItems = [
-    "Dashboard",
-    "User Management",
-    "Department Management",
-    "Employee Management",
-    "Employee In-Out",
-    "Customer In-Out",
-    "Company Cars In-Out",
-    "Customer Cars In-Out",
-    "Settings",
-    "Log Out",
-  ];
-
-  const items: MenuProps['items'] = [
+    const items: MenuProps['items'] = [
     {
       key: '1',
       label: (
@@ -109,8 +107,8 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
         setMenuItems([
           {
             label: "Dashboard",
-            icon: <FontAwesomeIcon icon={faTachometerAlt} />,
             key: '1',
+            icon: <FontAwesomeIcon icon={faTachometerAlt} />,
             path: "/"
           },
           {
@@ -147,13 +145,13 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
                 label: "Employee In-Out",
                 icon: <FontAwesomeIcon icon={faUserShield} />,
                 key: '5',
-                path: "/stuff"
+                path: "/stuffinout"
               },
               {
                 label: "Customer In-Out",
                 icon: <FontAwesomeIcon icon={faUserShield} />,
                 key: '6',
-                path: "/customer"
+                path: "/customerinout"
               },
             ]
           },
@@ -195,9 +193,6 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
               },
             ]
           },
-          
-          
-          
           {
             label: "Settings",
             icon: <FontAwesomeIcon icon={faUserShield} />,
@@ -209,7 +204,78 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
       }
       else 
       {
-        console.log("object")
+        setMenuItems([
+          {
+            label: "Dashboard",
+            icon: <FontAwesomeIcon icon={faTachometerAlt} />,
+            key: '1',
+            path: "/"
+          },
+          {
+            key: "group1",
+            label: "Staff In-Out",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "Employee In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '2',
+                path: "/stuff"
+              },
+              {
+                label: "Customer In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '3',
+                path: "/customer"
+              },
+            ]
+          },
+          {
+            key: "group2",
+            label: "Cars In-Out",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "InCar In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '4',
+                path: "/incar"
+              },
+              {
+                label: "OutCar In-Out",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '5',
+                path: "/outcar"
+              },
+            ]
+          },
+          {
+            key: "group3",
+            label: "Statistics",
+            icon: <FontAwesomeIcon icon={faUsers} />,
+            subItems : [
+              {
+                label: "History",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '6',
+                path: "/history"
+              },
+              {
+                label: "Statistics",
+                icon: <FontAwesomeIcon icon={faUserShield} />,
+                key: '7',
+                path: "/statistics"
+              },
+            ]
+          },
+          {
+            label: "Settings",
+            icon: <FontAwesomeIcon icon={faUserShield} />,
+            key: '8',
+            path: "/settings"
+          },
+
+        ])
       }
     } catch (error: any) {
       router.push("/login");
@@ -223,28 +289,28 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
   };
 
   const [menuKey, setMenuKey] = useState<MenuProps['selectedKeys']>(['1']);
-  // const location = useLocation();
-  // const history = useHistory();
-  console.log('menuKey', menuKey)
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
+  
   useEffect(() => {
     if (pathname !== "/login" && pathname !== "/register" && !currentUser) {
       getCurrentUser();
     }
   }, [pathname]);
 
-  // useEffect(() => {
+  useEffect(() => {
     
-  //   if (!selectedMenuItemKey) {
-  //     dispatch(setSelectedMenuItemKey('1'));
-  //   }
-  // }, []);
+    if (!selectedMenuItemKey) {
+      dispatch(setSelectedMenuItemKey('1'));
+      router.push("/");
+    }
+  }, []);
 
   const handleMenuItemClick = (itemKey: string) => {
     dispatch(setSelectedMenuItemKey(itemKey));
     setMenuKey([itemKey])
   }
 
-  console.log('selectedMenuItemKey', selectedMenuItemKey)
+  // console.log('selectedMenuItemKey', selectedMenuItemKey)
 
   const onLogout = async () => {
     try {
@@ -266,7 +332,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
   const renderMenuItems = (items: SideMenuItem[]) => {
     return items.map(item =>
       item.subItems ? (
-        <Menu.SubMenu key={item.key}  title={item.label}>
+        <Menu.SubMenu key={item.key}  title={item.label} icon={item.icon}>
           {renderMenuItems(item.subItems)}
         </Menu.SubMenu>
       ) : (
@@ -317,7 +383,8 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
                 defaultSelectedKeys={selectedMenuItemKey}
                 selectedKeys={selectedMenuItemKey}
                 onSelect={(item) => handleMenuItemClick(item.key)}
-                
+                openKeys = {openKeys}
+                onOpenChange={(keys) => setOpenKeys(keys)}
               >
                 {renderMenuItems(menuItems)}
               </Menu>

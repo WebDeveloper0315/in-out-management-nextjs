@@ -3,9 +3,15 @@
 @tailwind utilities;
 
 * {
-  font-family: "Montserrat", sans-serif !important;
+  font-family: "Montserrat", sans-serif;
   box-sizing: border-box;
 }
+
+@font-face {
+  font-family: 'LCD';
+  src: url('/Assets/fonts/DS-DIGIT.ttf') format('truetype');
+}
+
 
 /* :root {
   --foreground-rgb: 0, 0, 0;

@@ -61,19 +61,19 @@ export default function Login() {
             onFinish={onFinish}
             submitter={{
               searchConfig: {
-                submitText: 'Login', // Customize the submit button text
+                submitText: 'Login', 
               },
             }}
-            // backgroundImageUrl="https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp"
+            
             logo="/Assets/Image/logo.svg"
             
             backgroundVideoUrl="/Assets/Background/logo.mp4"
             
             containerStyle={{
-              position: 'absolute', // Adjust the position of the login form
-              top: '50%', // Example: move the form to the center vertically
-              left: '50%', // Example: move the form to the center horizontally
-              transform: 'translate(-50%, -50%)', // Center the form horizontally and vertically
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)',
               backgroundColor: 'rgba(0, 0, 0,0.65)',
               backdropFilter: 'blur(4px)',
             }}
@@ -132,13 +132,7 @@ export default function Login() {
               <ProFormCheckbox noStyle name="autoLogin">
                 Remember Me!
               </ProFormCheckbox>
-              {/* <a
-                style={{
-                  float: 'right',
-                }}
-              >
-                忘记密码
-              </a> */}
+
             </div>
           </LoginFormPage>
         </div>

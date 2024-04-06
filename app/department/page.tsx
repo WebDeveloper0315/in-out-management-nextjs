@@ -1,9 +1,10 @@
+import PageTitle from '@/components/PageTitle'
 import React from 'react'
 
 function Department() {
   return (
     <div>
-      Department
+      <PageTitle title='Department management' />
     </div>
   )
 }

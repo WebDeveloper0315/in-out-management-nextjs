@@ -7,9 +7,6 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SmileOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
 } from "@ant-design/icons";
 
 import { useRouter, usePathname } from "next/navigation";
@@ -20,7 +17,7 @@ import { setSelectedMenuItemKey} from "@/redux/menuSlice"
 import Loader from "./Loader";
 import { SetLoading } from "@/redux/loadersSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCoffee, faBars, faUser, faUserShield, faTachometerAlt, faBuilding, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faUserShield, faTachometerAlt, faBuilding, faUsers, faUserCog, faExchange, faExchangeAlt, faWalking, faHandshake, faCarSide, faCar, faBus, faChartLine, faHistory, faDiagnoses, faCogs } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 
 const { Header, Sider, Content } = Layout;
@@ -52,9 +49,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  const [isDropMenuOpen, setIsDropMenuOpen] = React.useState(false);
-
-    const items: MenuProps['items'] = [
+  const items: MenuProps['items'] = [
     {
       key: '1',
       label: (
@@ -114,7 +109,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           {
             key: "group1",
             label: "Admin Task",
-            icon: <FontAwesomeIcon icon={faUsers} />,
+            icon: <FontAwesomeIcon icon={faUserCog} />,
             subItems : [
               {
                 label: "Members",
@@ -139,17 +134,17 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           {
             key: "group2",
             label: "Staff In-Out",
-            icon: <FontAwesomeIcon icon={faUsers} />,
+            icon: <FontAwesomeIcon icon={faExchangeAlt} />,
             subItems : [
               {
                 label: "Employee In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faWalking} />,
                 key: '5',
                 path: "/stuffinout"
               },
               {
                 label: "Customer In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faHandshake} />,
                 key: '6',
                 path: "/customerinout"
               },
@@ -158,17 +153,17 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           {
             key: "group3",
             label: "Cars In-Out",
-            icon: <FontAwesomeIcon icon={faUsers} />,
+            icon: <FontAwesomeIcon icon={faCarSide} />,
             subItems : [
               {
                 label: "InCar In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faCar} />,
                 key: '7',
                 path: "/incar"
               },
               {
                 label: "OutCar In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faBus} />,
                 key: '8',
                 path: "/outcar"
               },
@@ -177,17 +172,17 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           {
             key: "group4",
             label: "Statistics",
-            icon: <FontAwesomeIcon icon={faUsers} />,
+            icon: <FontAwesomeIcon icon={faChartLine} />,
             subItems : [
               {
                 label: "History",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faHistory} />,
                 key: '9',
                 path: "/history"
               },
               {
                 label: "Statistics",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faDiagnoses} />,
                 key: '10',
                 path: "/statistics"
               },
@@ -195,7 +190,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           },
           {
             label: "Settings",
-            icon: <FontAwesomeIcon icon={faUserShield} />,
+            icon: <FontAwesomeIcon icon={faCogs} />,
             key: '11',
             path: "/settings"
           },
@@ -250,28 +245,9 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
             ]
           },
           {
-            key: "group3",
-            label: "Statistics",
-            icon: <FontAwesomeIcon icon={faUsers} />,
-            subItems : [
-              {
-                label: "History",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
-                key: '6',
-                path: "/history"
-              },
-              {
-                label: "Statistics",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
-                key: '7',
-                path: "/statistics"
-              },
-            ]
-          },
-          {
             label: "Settings",
             icon: <FontAwesomeIcon icon={faUserShield} />,
-            key: '8',
+            key: '6',
             path: "/settings"
           },
 
@@ -305,6 +281,22 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (time: Date) => {
+    const hours = time.getHours().toString().padStart(2, '0');
+    const minutes = time.getMinutes().toString().padStart(2, '0');
+    const seconds = time.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
   const handleMenuItemClick = (itemKey: string) => {
     dispatch(setSelectedMenuItemKey(itemKey));
     setMenuKey([itemKey])
@@ -331,13 +323,13 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
   // console.log('token ', token)
   const renderMenuItems = (items: SideMenuItem[]) => {
     return items.map(item =>
-      item.subItems ? (
+      item?.subItems ? (
         <Menu.SubMenu key={item.key}  title={item.label} icon={item.icon}>
           {renderMenuItems(item.subItems)}
         </Menu.SubMenu>
       ) : (
-        <Menu.Item key={item.key} icon={item.icon} onClick={() => (item.path? router.push(item.path): item.path)}>
-          {item.label}
+        <Menu.Item key={item?.key} icon={item?.icon} onClick={() => (item?.path? router.push(item.path): item.path)}>
+          {item?.label}
         </Menu.Item>
       )
     );
@@ -403,6 +395,9 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
                     }}
                   />
                   <Flex justify="flex-end" align="center" >
+                    <div style={{ fontFamily: 'LCD', fontSize: '40px' }} className="mr-6">
+                      {formatTime(time)}
+                    </div>
                     <Dropdown menu={{items}} placement="bottomRight" arrow>
                       <a onClick={(e) => e.preventDefault()} className="flex items-center mr-6">
                         <Badge count={1}> 
@@ -413,7 +408,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
                     <Dropdown menu={{items}} placement="bottomRight">
                       <a onClick={(e) => e.preventDefault()} className="mr-12">
                         <Avatar style={{ marginRight: '5px' }} src={`/api/image?key=${currentUser?.image}`} size="large"/>
-                        <span className="text-white">{currentUser?.name}</span>
+                        <span className="text-white">Hello? {currentUser?.name}</span>
                       </a>
                     </Dropdown>
                   </Flex>
@@ -422,7 +417,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
               <Content
                 style={{
                   
-                  padding: 24,
+                  padding: 18,
                   minHeight: 280,
                   borderRadius: token.borderRadiusLG,
                   

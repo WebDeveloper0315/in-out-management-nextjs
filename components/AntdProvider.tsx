@@ -209,17 +209,17 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           {
             key: "group1",
             label: "Staff In-Out",
-            icon: <FontAwesomeIcon icon={faUsers} />,
+            icon: <FontAwesomeIcon icon={faExchangeAlt} />,
             subItems : [
               {
                 label: "Employee In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faWalking} />,
                 key: '2',
                 path: "/stuff"
               },
               {
                 label: "Customer In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faHandshake} />,
                 key: '3',
                 path: "/customer"
               },
@@ -228,17 +228,17 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           {
             key: "group2",
             label: "Cars In-Out",
-            icon: <FontAwesomeIcon icon={faUsers} />,
+            icon: <FontAwesomeIcon icon={faCarSide} />,
             subItems : [
               {
                 label: "InCar In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faCar} />,
                 key: '4',
                 path: "/incar"
               },
               {
                 label: "OutCar In-Out",
-                icon: <FontAwesomeIcon icon={faUserShield} />,
+                icon: <FontAwesomeIcon icon={faBus} />,
                 key: '5',
                 path: "/outcar"
               },
@@ -246,7 +246,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
           },
           {
             label: "Settings",
-            icon: <FontAwesomeIcon icon={faUserShield} />,
+            icon: <FontAwesomeIcon icon={faCogs} />,
             key: '6',
             path: "/settings"
           },
@@ -319,6 +319,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
   };
 
   const [collapsed, setCollapsed] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const {token} = theme.useToken();
   // console.log('token ', token)
   const renderMenuItems = (items: SideMenuItem[]) => {
@@ -334,6 +335,29 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
       )
     );
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 700) {
+        setCollapsed(true);
+      } else {
+        setCollapsed(false);
+      }
+      if (window.innerWidth < 570) {
+        setMinimized(true);
+      } else {
+        setMinimized(false);
+      }
+    };
+
+    handleResize(); // Set initial state
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return (
     <ConfigProvider
@@ -395,9 +419,9 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
                     }}
                   />
                   <Flex justify="flex-end" align="center" >
-                    <div style={{ fontFamily: 'LCD', fontSize: '40px' }} className="mr-6">
+                    {!minimized && <div style={{ fontFamily: 'LCD', fontSize: '40px' }} className="mr-6">
                       {formatTime(time)}
-                    </div>
+                    </div>}
                     <Dropdown menu={{items}} placement="bottomRight" arrow>
                       <a onClick={(e) => e.preventDefault()} className="flex items-center mr-6">
                         <Badge count={1}> 
@@ -408,7 +432,7 @@ function AntdProvider({ children }: { children: React.ReactNode }) {
                     <Dropdown menu={{items}} placement="bottomRight">
                       <a onClick={(e) => e.preventDefault()} className="mr-12">
                         <Avatar style={{ marginRight: '5px' }} src={`/api/image?key=${currentUser?.image}`} size="large"/>
-                        <span className="text-white">Hello? {currentUser?.name}</span>
+                        {!minimized && <span className="text-white">Hello? {currentUser?.name}</span>}
                       </a>
                     </Dropdown>
                   </Flex>

@@ -36,3 +36,9 @@
 .underline {
     text-decoration: underline;
 }
+
+.button-badge {
+    position: absolute;
+    top: 0;
+    transform: translate(-70%, -30%);
+}

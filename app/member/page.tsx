@@ -1,6 +1,6 @@
 "use client";
 import PageTitle from "@/components/PageTitle";
-import React, {useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -15,15 +15,22 @@ import {
   Image,
   Flex,
   ConfigProvider,
+  Switch,
 } from "antd";
-import { CloseOutlined, InboxOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  CloseOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  InboxOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import ImgCrop from "antd-img-crop";
 import html2canvas from "html2canvas";
-import locale from 'antd/locale/ko_KR';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ko';
-dayjs.locale('ko_KR');
+import locale from "antd/locale/en_US";
+import dayjs from "dayjs";
+import "dayjs/locale/en";
+dayjs.locale("en_US");
 
 const { Option } = Select;
 const { Dragger } = Upload;
@@ -41,18 +48,15 @@ interface userTableDataItem {
 
 const customLocale = {
   lang: {
-    placeholder: 'Please select', // Customize the placeholder text
-    year: 'Custom Year',
-    month: 'Custom Month',
-    day: 'Custom Day',
-    dateFormat: 'YYYY年MM月DD日', // Customize the date format
-    timeFormat: 'HH:mm', // Customize the time format
-    dateTimeFormat: 'YYYY年MM月DD日 HH:mm', // Customize the date and time format
+    placeholder: "Please select", // Customize the placeholder text
+    year: "Custom Year",
+    month: "Custom Month",
+    day: "Custom Day",
+    dateFormat: "YYYY年MM月DD日", // Customize the date format
+    timeFormat: "HH:mm", // Customize the time format
+    dateTimeFormat: "YYYY年MM月DD日 HH:mm", // Customize the date and time format
   },
-  
 };
-
-
 
 export default function Member() {
   const [open, setOpen] = useState(false);
@@ -68,6 +72,7 @@ export default function Member() {
   const [capturing, setCapturing] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
+  const [cameraChecked, setCameraChecked] = useState(false);
 
   const columns = [
     {
@@ -121,25 +126,73 @@ export default function Member() {
   ];
 
   const showModal = () => {
+    form.setFieldsValue({
+      name: '', // Initialize with the default value for the name field
+      dob: null, // Initialize with the default value for the date of birth field
+      id: '', // Initialize with the default value for the ID field
+      password: '', // Initialize with the default value for the password field
+      confirmpassword: '',  // Initialize with the default value for the confirm password field
+      role: undefined, // Initialize with the default value for the role field
+    });
+    setUserAvatarImage(null);
+
     setOpen(true);
-    startCameraStream();
+    stopCameraStream();
+    // setCameraChecked(false);
   };
 
+  const handleFormSubmit = async () => {
+    try {
+      const formData = form.getFieldsValue(); // Get the form values
+      const imageData = userAvatarImage; // Get the image data
+  
+      
+  
+      // Make a POST request to your API endpoint to register the form values
+      const response = await axios.post('api/register', {
+        formData,
+        imageData,
+      });
+  
+      // Handle the successful response from the API
+      console.log('Form data registered successfully:', response.data);
+      // Reset the form after successful submission
+      form.resetFields();
+    } catch (error) {
+      // Handle any errors that occur during the form submission
+      console.error('Error registering form data:', error);
+    }
+  };
+  
+
   const handleOk = () => {
+    handleFormSubmit();
     setOpen(false);
+    stopCameraStream();
+    // setCameraChecked(false);
   };
 
   const handleCancel = () => {
     setOpen(false);
     stopCameraStream();
+    // setCameraChecked(false);
   };
 
   const handleFileChange = (file: File) => {
     setUserAvatarImage(URL.createObjectURL(file));
   };
 
+  console.log("camera", cameraOn);
 
-  console.log("camera", cameraOn)
+  const onCameraStateChange = (checked: boolean) => {
+    setCameraChecked(checked);
+    if (checked) {
+      startCameraStream();
+    } else {
+      stopCameraStream();
+    }
+  };
+
   useEffect(() => {
     return () => {
       // Clean up video stream when component is unmounted
@@ -147,7 +200,6 @@ export default function Member() {
         videoStream.getTracks().forEach((track) => {
           track.stop();
         });
-        
       }
     };
   }, [videoStream]);
@@ -161,14 +213,12 @@ export default function Member() {
     }
   }, [videoStream]);
 
-
   const startCameraStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      
+
       setCameraStream(stream);
       setVideoStream(stream);
-      
     } catch (error) {
       console.error("Error accessing camera:", error);
     }
@@ -185,32 +235,32 @@ export default function Member() {
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
       setCameraStream(null);
-      
     }
+    setCameraChecked(false);
   };
 
   const captureImage = async () => {
-
-    const video = document.getElementById('video') as HTMLVideoElement;
+    const video = document.getElementById("video") as HTMLVideoElement;
     //const video = videoRef.current!;
 
     console.log("video", video);
     // console.log("video width", video?.videoHeight);
-    
+
     if (video) {
       const canvas = await html2canvas(video);
-    // const canvas = document.createElement('canvas');
-    // canvas.width = video.videoWidth || 0;
-    // canvas.height = video.videoHeight || 0;
-    const ctx = canvas.getContext('2d');
-  
-    if (ctx ) {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageUrl = canvas.toDataURL('image/png');
-      setUserAvatarImage(imageUrl);
-      setCapturing(false);
+      // const canvas = document.createElement('canvas');
+      // canvas.width = video.videoWidth || 0;
+      // canvas.height = video.videoHeight || 0;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageUrl = canvas.toDataURL("image/png");
+        setUserAvatarImage(imageUrl);
+        setCapturing(false);
+        stopCameraStream();
+      }
     }
-  }
   };
 
   const handleCaptureImage = async () => {
@@ -287,41 +337,39 @@ export default function Member() {
         onOk={handleOk}
         onCancel={handleCancel}
         confirmLoading={confirmLoading}
+        okText="COK"
+        cancelText="CCancel"
       >
         <Form form={form} layout="vertical">
-          {videoStream && cameraOn && (
+          {videoStream && (
             <Form.Item name="camera" label="Camera">
-            <video id="video"
-              // ref={videoRef}
-              ref={(video) => {
-                if (video) {
-                  video.srcObject = videoStream;
-                  video.style.transform = 'scaleX(-1)';
-                }
-              }}
-              autoPlay
-              playsInline
-              style={{ width: '100%' }}
-            ></video>
-            <Flex justify="space-around">
-            <Button key="capture" type="primary" onClick={captureImage}>
-            Capture
-          </Button>
-          <Button key="cancel" onClick={stopCameraStream}>
-            Cancel
-          </Button>
-          </Flex>
+              <video
+                id="video"
+                // ref={videoRef}
+                ref={(video) => {
+                  if (video) {
+                    video.srcObject = videoStream;
+                    video.style.transform = "scaleX(-1)";
+                  }
+                }}
+                autoPlay
+                playsInline
+                style={{ width: "100%" }}
+              ></video>
+              <Flex justify="space-around">
+                <Button key="capture" type="primary" onClick={captureImage}>
+                  Capture
+                </Button>
+                <Button key="cancel" onClick={stopCameraStream}>
+                  Close
+                </Button>
+              </Flex>
             </Form.Item>
-            
           )}
           <Form.Item name="image" label="Image">
             {userAvatarImage ? (
               <div>
-                <Avatar
-                  src={userAvatarImage}
-                  alt="User Image"
-                  size={64}
-                />
+                <Avatar src={userAvatarImage} alt="User Image" size={64} />
                 <Button
                   type="primary"
                   shape="circle"
@@ -335,33 +383,39 @@ export default function Member() {
               </div>
             ) : (
               <div>
-              <ImgCrop
-                rotationSlider
-                modalTitle="Custom Title"
-                modalCancel="CANCEL"
-                modalOk="OKOK"
-              >
-                <Dragger
-                  accept=".png,.jpg,.jpeg"
-                  beforeUpload={(file) => {
-                    if (file instanceof File) {
-                      handleFileChange(file);
-                    } else {
-                      handleCaptureImage();
-                    }
-                    return false; // Prevent default upload behavior
-                  }}
-                  showUploadList={false}
+                <ImgCrop
+                  rotationSlider
+                  modalTitle="Custom Title"
+                  modalCancel="CANCEL"
+                  modalOk="OKOK"
                 >
-                  <div>
-                    <p className="ant-upload-drag-icon">
-                      <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Click or drag to upload</p>
-                  </div>
-                </Dragger>
-              </ImgCrop>
-              <Button type="primary" name="Camera" onClick={()=>{setCameraOn(!cameraOn)}} > Camera </Button>
+                  <Dragger
+                    accept=".png,.jpg,.jpeg"
+                    beforeUpload={(file) => {
+                      if (file instanceof File) {
+                        handleFileChange(file);
+                      }
+                      return false; // Prevent default upload behavior
+                    }}
+                    showUploadList={false}
+                  >
+                    <div>
+                      <p className="ant-upload-drag-icon">
+                        <InboxOutlined />
+                      </p>
+                      <p className="ant-upload-text">Click or drag to upload</p>
+                    </div>
+                  </Dragger>
+                </ImgCrop>
+                <div className="mt-2">
+                  <Switch
+                    checkedChildren="Open"
+                    unCheckedChildren="Close"
+                    onChange={onCameraStateChange}
+                    checked={cameraChecked}
+                  />
+                  <span>&nbsp;Camera</span>
+                </div>
               </div>
             )}
           </Form.Item>
@@ -370,35 +424,68 @@ export default function Member() {
             label="Name"
             rules={[{ required: true, message: "Please enter the name" }]}
           >
-            <Input />
+            <Input placeholder="Please enter the name"/>
           </Form.Item>
           <ConfigProvider locale={{ ...locale, ...customLocale }}>
-          <Form.Item
-            name="dob"
-            label="DOB"
-            rules={[
-              { required: true, message: "Please select the date of birth" },
-            ]}
-          >
-            <DatePicker />
-          </Form.Item>
+            <Form.Item
+              name="dob"
+              label="DOB"
+              rules={[
+                { required: true, message: "Please select the date of birth" },
+              ]}
+            >
+              <DatePicker placeholder="Date"/>
+            </Form.Item>
           </ConfigProvider>
           <Form.Item
             name="id"
             label="ID"
             rules={[{ required: true, message: "Please enter the ID" }]}
           >
-            <Input />
+            <Input placeholder="Please enter the id"/>
           </Form.Item>
-          <Form.Item name="password" label="Password">
-            <Input />
+          <Form.Item
+            name="password"
+            label="Password"
+            style={{ marginBottom: 0 }}
+            rules={[{ required: true, message: "Please enter the password" }]}
+          >
+            <Input.Password
+              placeholder="input password"
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+            />
+          </Form.Item>
+          <Form.Item
+            name="confirmpassword"
+            label="Confirm Password"
+            style={{ marginBottom: 0 }}
+            rules={[
+              { required: true, message: "Please confirm the password" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject("The two passwords do not match");
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              placeholder="input password"
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+            />
           </Form.Item>
           <Form.Item
             name="role"
             label="Role"
             rules={[{ required: true, message: "Please select the role" }]}
           >
-            <Select>
+            <Select placeholder="Select the role">
               <Option value="admin">Admin</Option>
               <Option value="user">User</Option>
             </Select>

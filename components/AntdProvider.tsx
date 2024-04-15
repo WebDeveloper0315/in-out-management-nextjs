@@ -22,7 +22,24 @@ import Image from "next/image";
 
 const { Header, Sider, Content } = Layout;
 
-type SideMenuItem = Required<MenuProps>['items'][number];
+type SubMenuItem = {
+  label: React.ReactNode;
+  icon: React.ReactNode;
+  key: string;
+  path: string;
+};
+
+type MenuItemType = {
+  label: React.ReactNode;
+  key: string;
+  icon: React.ReactNode;
+  path?: string;
+  subItems?: SubMenuItem[];
+};
+
+type SideMenuItem = MenuItemType;
+
+// type SideMenuItem = Required<MenuProps>['items'][number];
 
 function getItem(
   label: React.ReactNode,

@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
             "$2a$10$OwT.utp3zyRrMaufMMWyOOvhGj1yMlgUdQNCHAbiRH6Ao70gmJ4xq",
           role: "superadmin",
           
+          image: "Avatars/user_man.png"
+          
         });
 
         await newUser.save();

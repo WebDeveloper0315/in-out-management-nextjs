@@ -141,22 +141,51 @@ export default function Member() {
     // setCameraChecked(false);
   };
 
+  const getImageFileFromRoute = (imageRoute: string): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.responseType = 'blob';
+      xhr.onload = function() {
+        const blob = xhr.response;
+        const file = new File([blob], 'image.jpg', { type: 'image/jpeg' });
+        resolve(file);
+      };
+      xhr.open('GET', imageRoute);
+      xhr.send();
+    });
+  };
+
   const handleFormSubmit = async () => {
     try {
-      const formData = form.getFieldsValue(); // Get the form values
-      const imageData = userAvatarImage; // Get the image data
+      const formData = form.getFieldsValue(); 
+    
+      const isExist = await axios.get(
+        `/api/users/register?userId=${formData.id}`
+      )
+
+      if(isExist.status === 200 ) {
+        let finalFilePath = "Avatars/user_man.png"
+        if(userAvatarImage !== null) {
+          const formValue = new FormData()
+          const imageRoute: string = userAvatarImage as string;
+          const imageFile = await getImageFileFromRoute(imageRoute);
+          formValue.append("image", imageFile)
+          const resImage = await axios.post("/api/image", formValue)
+
+          if(resImage.status === 201) {
+            finalFilePath = resImage.data.filename;
+          }
+        }
+        formData.imagePath = finalFilePath
+        const response = await axios.post("/api/users/register", formData);
+
+        message.success(response.data.message)
+
+        getDatafromDatabase();
+        
+      }
   
-      
-  
-      // Make a POST request to your API endpoint to register the form values
-      const response = await axios.post('api/register', {
-        formData,
-        imageData,
-      });
-  
-      // Handle the successful response from the API
-      console.log('Form data registered successfully:', response.data);
-      // Reset the form after successful submission
+
       form.resetFields();
     } catch (error) {
       // Handle any errors that occur during the form submission
@@ -260,45 +289,6 @@ export default function Member() {
         setCapturing(false);
         stopCameraStream();
       }
-    }
-  };
-
-  const handleCaptureImage = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video = document.createElement("video");
-      const photoButton = document.createElement("button");
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      // Display video stream in the document
-      video.srcObject = stream;
-      video.play();
-
-      // Create a button to capture a photo
-      photoButton.textContent = "Take Photo";
-      document.body.appendChild(video);
-      document.body.appendChild(photoButton);
-
-      // On click, capture the video frame as an image
-      photoButton.addEventListener("click", () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Convert the captured frame to a data URL
-        const capturedImage = canvas.toDataURL("image/png");
-
-        // Set the captured image as the userAvatarImage state
-        setUserAvatarImage(capturedImage);
-
-        // Clean up by stopping the video stream and removing elements from the document
-        stream.getTracks().forEach((track) => track.stop());
-        document.body.removeChild(video);
-        document.body.removeChild(photoButton);
-      });
-    } catch (error) {
-      console.error("Error accessing camera:", error);
     }
   };
 
@@ -437,6 +427,16 @@ export default function Member() {
               <DatePicker placeholder="Date"/>
             </Form.Item>
           </ConfigProvider>
+          <Form.Item
+            name="gender"
+            label="Gender"
+            rules={[{ required: true, message: "Please enter the Gender" }]}
+          >
+            <Select placeholder="Select the role">
+              <Option value="true">Man</Option>
+              <Option value="false">Woman</Option>
+            </Select>
+          </Form.Item>
           <Form.Item
             name="id"
             label="ID"

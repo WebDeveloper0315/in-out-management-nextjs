@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { connectDB } from "@/config/dbConfig";
 import User from "@/models/userModel";
 import bcrypt from "bcryptjs";
+import { validateJWT } from "@/helpers/validateJWT";
 
 connectDB();
 
@@ -25,11 +26,11 @@ export async function POST(request: NextRequest) {
     const newUser = new User({
       name: reqBody.name,
       password: reqBody.password,
-      DOB: new Date(1990, 0, 1),
-      gender: true,
-      id: "khc0315",
-      role: "admin",
-      image: "sdf"
+      DOB: reqBody.dob,
+      gender: reqBody.gender,
+      id: reqBody.id,
+      role: reqBody.role,
+      image: reqBody.imagePath
     });
 
     await newUser.save();
@@ -38,5 +39,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "User Created Success" });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    await validateJWT(request);
+    const { searchParams } = new URL(request.url);
+
+    const userId = searchParams.get("userId")
+
+    const user = await User.findOne({ userId });
+
+    if(user){
+      return NextResponse.json(
+        {message: "The user exists", success: true},
+        {status: 201}
+      )
+    }
+    return NextResponse.json(
+      {message: "The user does exists", success: true},
+      {status: 200}
+    )
+  } catch (error: any) {
+    return NextResponse.json(
+      {message: error.message}, { status: 500}
+    )
   }
 }

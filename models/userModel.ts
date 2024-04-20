@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    DOB: {
-      type: Date,
+    birth: {
+      type: String,
       required: false,
     },
     gender: {

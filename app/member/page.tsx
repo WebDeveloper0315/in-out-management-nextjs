@@ -16,6 +16,7 @@ import {
   Flex,
   ConfigProvider,
   Switch,
+  Popconfirm,
 } from "antd";
 import {
   CloseOutlined,
@@ -23,6 +24,7 @@ import {
   EyeTwoTone,
   InboxOutlined,
   PlusOutlined,
+  EditOutlined, DeleteOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import ImgCrop from "antd-img-crop";
@@ -31,30 +33,34 @@ import locale from "antd/locale/en_US";
 import dayjs from "dayjs";
 import "dayjs/locale/en";
 dayjs.locale("en_US");
+import moment from 'moment';
+import { NextResponse } from "next/server";
+
 
 const { Option } = Select;
 const { Dragger } = Upload;
 
 interface userTableDataItem {
+  key: string,
   no: number;
   name: string;
   id: string;
   password: string;
   role: string;
-  dob: Date;
+  birth: String;
   gender: string;
   image: string;
 }
 
 const customLocale = {
   lang: {
-    placeholder: "Please select", // Customize the placeholder text
+    placeholder: "Please select", 
     year: "Custom Year",
     month: "Custom Month",
     day: "Custom Day",
-    dateFormat: "YYYY年MM月DD日", // Customize the date format
-    timeFormat: "HH:mm", // Customize the time format
-    dateTimeFormat: "YYYY年MM月DD日 HH:mm", // Customize the date and time format
+    dateFormat: "YYYY年MM月DD日",
+    timeFormat: "HH:mm", 
+    dateTimeFormat: "YYYY年MM月DD日 HH:mm", 
   },
 };
 
@@ -78,61 +84,89 @@ export default function Member() {
     {
       title: "No",
       dataIndex: "no",
-      key: "no",
+      
     },
     {
       title: "Image",
       dataIndex: "image",
-      key: "image",
       render: (image: string) => (
         <Avatar src={<img src={`${image}`} alt="User Image" />} />
       ),
+      
     },
     {
       title: "Name",
       dataIndex: "name",
-      key: "name",
+      
     },
     {
       title: "Gender",
       dataIndex: "gender",
-      key: "gender",
+      
     },
     {
-      title: "DOB",
-      dataIndex: "dob",
-      key: "dob",
+      title: "Birth",
+      dataIndex: "birth",
     },
     {
       title: "ID",
       dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Password",
-      dataIndex: "password",
-      key: "password",
     },
     {
       title: "Role",
       dataIndex: "role",
-      key: "role",
     },
     {
       title: "Action",
       dataIndex: "action",
-      key: "action",
+      render: (text: string, record: any) => (
+        <div>
+          <Button type="primary" onClick={() => handleEdit(record)} style={{ marginRight: '8px' }} ><EditOutlined /></Button>
+          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)} okText="Yes" cancelText="No">
+            <Button danger ><DeleteOutlined /></Button>
+          </Popconfirm>
+        </div>
+      ),
     },
   ];
 
+  const handleEdit = (record: any) => {
+    form.setFieldsValue({
+      name: record.name, 
+      birth: dayjs(record.birth), 
+      gender: record.gender,
+      id: record.id, 
+      password: '',
+      confirmpassword: '',
+      role: record.role, 
+      key: record.key,
+    });
+    if(record.image){
+      setUserAvatarImage(record.image)
+    }
+    setOpen(true)
+  };
+  
+  // Function to handle the delete action
+  const handleDelete = async (id: any) => {
+    try {
+      const response = await axios.post(`/api/member?delete=${id}`);
+      message.success(response.data.message);
+    } catch (error: any) {
+      message.error('Error deleting form data:');
+    }
+    
+  };
+
   const showModal = () => {
     form.setFieldsValue({
-      name: '', // Initialize with the default value for the name field
-      dob: null, // Initialize with the default value for the date of birth field
-      id: '', // Initialize with the default value for the ID field
-      password: '', // Initialize with the default value for the password field
-      confirmpassword: '',  // Initialize with the default value for the confirm password field
-      role: undefined, // Initialize with the default value for the role field
+      name: '', 
+      birht: null, 
+      id: '', 
+      password: '',
+      confirmpassword: '',
+      role: undefined, 
+      key:'',
     });
     setUserAvatarImage(null);
 
@@ -157,6 +191,7 @@ export default function Member() {
 
   const handleFormSubmit = async () => {
     try {
+
       const formData = form.getFieldsValue(); 
     
       const isExist = await axios.get(
@@ -177,28 +212,44 @@ export default function Member() {
           }
         }
         formData.imagePath = finalFilePath
-        const response = await axios.post("/api/users/register", formData);
 
-        message.success(response.data.message)
-
+        formData.birth = formData.birth.format("YYYY-MM-DD").toString()
+        let response
+        if(formData.key === ''){
+          response = await axios.post("/api/users/register", formData);
+        } else {
+          response = await axios.post(`/api/member?edit=${formData.key}`, formData)
+        }
+        
         getDatafromDatabase();
         
       }
   
-
       form.resetFields();
-    } catch (error) {
+    } catch (error: any) {
       // Handle any errors that occur during the form submission
       console.error('Error registering form data:', error);
     }
   };
   
 
-  const handleOk = () => {
-    handleFormSubmit();
-    setOpen(false);
-    stopCameraStream();
-    // setCameraChecked(false);
+  const handleOk = async () => {
+    try {
+      
+      setConfirmLoading(true)
+      await handleFormSubmit();
+      
+      setOpen(false);
+      message.success("Saved the data to Database")
+    } catch (error: any) {
+      message.error("Error saving the data to database")
+    } finally {
+      setConfirmLoading(false)
+      
+      stopCameraStream();
+    }
+    
+    
   };
 
   const handleCancel = () => {
@@ -270,16 +321,9 @@ export default function Member() {
 
   const captureImage = async () => {
     const video = document.getElementById("video") as HTMLVideoElement;
-    //const video = videoRef.current!;
-
-    console.log("video", video);
-    // console.log("video width", video?.videoHeight);
 
     if (video) {
       const canvas = await html2canvas(video);
-      // const canvas = document.createElement('canvas');
-      // canvas.width = video.videoWidth || 0;
-      // canvas.height = video.videoHeight || 0;
       const ctx = canvas.getContext("2d");
 
       if (ctx) {
@@ -294,9 +338,9 @@ export default function Member() {
 
   const getDatafromDatabase = async () => {
     try {
-      const response = await axios.get(`api/member`);
+      const response = await axios.post("/api/member?getData=1");
       const userData = response.data?.data?.userTableData;
-      console.log(response.data?.data);
+      console.log('response.data?.data', response.data?.data);
       setUserTableData(userData);
     } catch (error: any) {
       message.error(error.response?.data?.message || "Something went wrong");
@@ -305,6 +349,13 @@ export default function Member() {
 
   useEffect(() => {
     getDatafromDatabase();
+
+    const interval = setInterval(() => {
+      getDatafromDatabase();
+    }, 5000);
+  
+    // Clean up the interval when the component is unmounted
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -418,8 +469,8 @@ export default function Member() {
           </Form.Item>
           <ConfigProvider locale={{ ...locale, ...customLocale }}>
             <Form.Item
-              name="dob"
-              label="DOB"
+              name="birth"
+              label="Birth"
               rules={[
                 { required: true, message: "Please select the date of birth" },
               ]}
@@ -489,6 +540,12 @@ export default function Member() {
               <Option value="admin">Admin</Option>
               <Option value="user">User</Option>
             </Select>
+          </Form.Item>
+          <Form.Item
+            name="key"
+            label="key"
+          >
+            <Input />
           </Form.Item>
         </Form>
       </Modal>

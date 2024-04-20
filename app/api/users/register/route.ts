@@ -16,17 +16,19 @@ export async function POST(request: NextRequest) {
     if (user) {
       throw new Error("User already exists");
     }
-
+    
     // hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(reqBody.password, salt);
     reqBody.password = hashedPassword;
+    
 
+    console.log('reqBody', reqBody)
     // create user
     const newUser = new User({
       name: reqBody.name,
       password: reqBody.password,
-      DOB: reqBody.dob,
+      birth: reqBody.birth,
       gender: reqBody.gender,
       id: reqBody.id,
       role: reqBody.role,
@@ -34,6 +36,7 @@ export async function POST(request: NextRequest) {
     });
 
     await newUser.save();
+    console.log(newUser);
     
 
     return NextResponse.json({ message: "User Created Success" });

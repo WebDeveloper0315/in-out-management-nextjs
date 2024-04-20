@@ -6,3 +6,7 @@
     padding: 0px !important;
   }
   
+  .ant-table button {
+    height: auto !important; /* Set height to auto to disable the fixed height */
+    border-radius: 10px !important;
+  }
